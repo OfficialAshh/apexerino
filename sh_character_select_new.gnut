@@ -3428,9 +3428,6 @@ void function th_func_triggerbot()
 	while (true) {
 		entity lp_player = GetLocalViewPlayer();
 		entity player = GetLocalClientPlayer();
-		entity activeWeapon2 = player.GetActiveWeapon(eActiveInventorySlot.mainHand);
-		string activeTriggerWeapon2 = activeWeapon2.GetWeaponClassName();
-		AddPlayerHint(0.1, 0.1, $"", activeTriggerWeapon2);
 		
 		triggerbotEnabledPC = InputIsButtonDown(MOUSE_RIGHT);
 		triggerbotEnabledConsole = InputIsButtonDown(BUTTON_TRIGGER_LEFT);
@@ -3964,7 +3961,7 @@ void function UpdateButtonStates()
 			thread th_func_item_icon_esp()
 			thread th_func_seer_health_esp()
 			//thread th_func_auto_loot()
-			//thread spectatorCount()
+			thread spectatorCount()
 			
 			thread_init_flag = true
 	}
