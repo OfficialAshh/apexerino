@@ -3589,6 +3589,7 @@ void function th_func_item_icon_esp()
 void function spectatorCount() {
 	
 	float functionref(float, float) calcAngleDiff = float
+
 	function(float angle1, float angle2) {
 		float diff = angle1 - angle2;
 		if (diff > 180) {
@@ -3596,48 +3597,81 @@ void function spectatorCount() {
 		} else if (diff < -180) {
 			diff += 360;
 		};
+		//make diff positive
 		if (diff < 0) {
 			diff *= -1;
 		};
 		return diff;
 	};
-	
+
+	//could be a struct but whatever
 	array < int > lastUpdateTimes;
 	array < float > lastAngleDeltas;
+	array < string > lastNames;
+
+	//resize to 100 so we dont go out of bounds
+	//100 just in case lmao
 	lastUpdateTimes.resize(100);
 	lastAngleDeltas.resize(100);
-	
+	lastNames.resize(100);
+
 	entity localview = GetLocalViewPlayer();
 	if (IsValid(localview)) {
-		AnnouncementMessage(localview, "Spectator Count Started", "Created By: !Ashton#1555", <0,255,0>, 0);
+		string announcement = "Spectator Count Started";
+		string subText = "Created By: !Ashtonn#1555";
+		AnnouncementMessage(localview, announcement, subText, <0,255,0>, 0);
 	}
+
+	bool showNames = false; // variable to show names
+	bool buttonDown = false;  // to keep track of the state of the "u" key
+ 
 	while (true) {
 		entity localPlayer = GetLocalClientPlayer();
 		EndSignal(localPlayer, "OnDestroy");
 		if (IsValid(localPlayer)) {
+ 
 			array < entity > players = GetPlayerArrayIncludingSpectators();
-			int playerCount = players.len();
-			for (int i = 0; i < playerCount; i++) {
-				if (players[i] == localPlayer) {
+			int count = 0;
+			for (int i = 0; i < players.len(); i++) {
+				entity player = players[i];
+				if (player == localPlayer) {
 					continue;
 				}
-				float angleDelta = calcAngleDiff(players[i].EyeAngles().y, localPlayer.EyeAngles().y);
-				if (!IsAlive(players[i]) && angleDelta < 0.1) {
-					lastUpdateTimes[i] = GetUnixTimestamp();
+				if (IsAlive(player) == false) {
+					float angleDelta = calcAngleDiff(player.EyeAngles().y, localPlayer.EyeAngles().y);
+					if (angleDelta < 0.1) {
+						lastUpdateTimes[i] = GetUnixTimestamp();
+						lastAngleDeltas[i] = angleDelta;
+						lastNames[i] = player.GetPlayerName();
+						count++;
+					}
 				}
-				lastAngleDeltas[i] = angleDelta;
 			}
-			int count = 0;
-			int currentTime = GetUnixTimestamp();
-			for (int i = 0; i < lastUpdateTimes.len(); i++) {
-				if (currentTime - lastUpdateTimes[i] < 3) {
-					count++;
+ 
+			string Str = "";
+			if (showNames) {
+				for (int i = 0; i < lastNames.len(); i++) {
+					if (GetUnixTimestamp() - lastUpdateTimes[i] < 3) {
+					Str += "who: " + lastNames[i] + "\n";
+					}
 				}
-			}		
-			AddPlayerHint(0.1, 0.1, $"", "Spectators: " + string(count));
-		};
+			} else {
+				Str = "specs: " + count + "\n";
+			}
+			AddPlayerHint(0.1, 0.1, $"", Str);
+ 
+			if (InputIsButtonDown(KEY_U)) {
+				if (!buttonDown) {
+					showNames = true; 
+					buttonDown = true;
+				}
+			} else {
+				showNames = false;
+				buttonDown = false;
+			}
+		}
 		WaitFrame();
-	};
+	}
 }
 
 void function th_func_seer_health_esp()
