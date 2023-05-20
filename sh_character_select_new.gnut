@@ -3428,7 +3428,10 @@ void function th_func_triggerbot()
 	while (true) {
 		entity lp_player = GetLocalViewPlayer();
 		entity player = GetLocalClientPlayer();
-
+		entity activeWeapon2 = player.GetActiveWeapon(eActiveInventorySlot.mainHand);
+		string activeTriggerWeapon2 = activeWeapon2.GetWeaponClassName();
+		AddPlayerHint(0.1, 0.1, $"", activeTriggerWeapon2);
+		
 		triggerbotEnabledPC = InputIsButtonDown(MOUSE_RIGHT);
 		triggerbotEnabledConsole = InputIsButtonDown(BUTTON_TRIGGER_LEFT);
 
@@ -3456,18 +3459,15 @@ void function th_func_triggerbot()
 
 				string activeTriggerWeapon = activeWeapon.GetWeaponClassName();
 				array<string> sniperWeapons = [];
+				array<string> pistolWeapons = [];
 				array<string> shotgunWeapons = [
 					"mp_weapon_energy_shotgun",
 					"mp_weapon_mastiff",
 					"mp_weapon_shotgun_pistol",
 					"mp_weapon_shotgun"
 				];
-				array<string> pistolWeapons = [
-					"mp_weapon_wingman",
-					"mp_weapon_semipistol"
-				];
 				array<string> assaultRifleWeapons = [
-					"mp_weapon_nemesis"
+					"mp_weapon_nemesis",
 				];
 
 	
@@ -3499,9 +3499,11 @@ void function th_func_triggerbot()
 					bool isShotgun = shotgunWeapons.contains(activeTriggerWeapon);
 					bool isPistol = pistolWeapons.contains(activeTriggerWeapon);
 					bool isAssaultRifle = assaultRifleWeapons.contains(activeTriggerWeapon);
+					bool firstTrigger = true;
 
 					if ((IsFiringRangeGameMode() || IsSurvivalTraining() || (GameRules_GetGameMode() == GAMEMODE_CONTROL && (crosshairEnt.GetTeam() % 2) != (player.GetTeam() % 2)) || (GameRules_GetGameMode() != GAMEMODE_CONTROL && crosshairEnt.GetTeam() != player.GetTeam())) && (crosshairEnt.IsPlayer() || IsTrainingDummie(crosshairEnt) || IsProwler(crosshairEnt) || IsSpider(crosshairEnt))) {
 						if (isSniper || isShotgun || isPistol || isAssaultRifle) {
+							WaitFrames(4);
 							player.ClientCommand("+attack");
 							player.ClientCommand("-attack");
 						}
@@ -3962,7 +3964,7 @@ void function UpdateButtonStates()
 			thread th_func_item_icon_esp()
 			thread th_func_seer_health_esp()
 			//thread th_func_auto_loot()
-			thread spectatorCount()
+			//thread spectatorCount()
 			
 			thread_init_flag = true
 	}
